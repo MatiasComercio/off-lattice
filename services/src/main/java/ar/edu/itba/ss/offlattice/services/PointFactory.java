@@ -110,7 +110,7 @@ public class PointFactory {
 	 * @param max the max value
 	 * @return a value between the min (inclusive) and the max (exclusive) value
 	 */
-	private double randomDouble(final double min, final double max) {
+	public double randomDouble(final double min, final double max) {
 		return min + random.nextDouble() * max;
 	}
 	

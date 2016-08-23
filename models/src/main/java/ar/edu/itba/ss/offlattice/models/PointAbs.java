@@ -31,6 +31,13 @@ public abstract class PointAbs {
 	public double radio() {
 		return 0;
 	}
+
+	@Value.Default
+	public double velocity() {
+		return 0.03;
+	}
+
+	public abstract double orientation();
 	
 	@Value.Check
 	protected void checkRadio() {

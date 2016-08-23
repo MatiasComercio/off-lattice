@@ -2,12 +2,10 @@ package ar.edu.itba.ss.offlattice.core;
 
 import ar.edu.itba.ss.offlattice.interfaces.BruteForceMethod;
 import ar.edu.itba.ss.offlattice.interfaces.CellIndexMethod;
+import ar.edu.itba.ss.offlattice.interfaces.OffLattice;
 import ar.edu.itba.ss.offlattice.models.ParticleType;
 import ar.edu.itba.ss.offlattice.models.Point;
-import ar.edu.itba.ss.offlattice.services.BruteForceMethodImpl;
-import ar.edu.itba.ss.offlattice.services.CellIndexMethodImpl;
-import ar.edu.itba.ss.offlattice.services.CellIndexMethods;
-import ar.edu.itba.ss.offlattice.services.PointFactory;
+import ar.edu.itba.ss.offlattice.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +54,10 @@ public class Main {
 									"\t method (<output.dat>) generated with the other two files.\n" +
 									"\t <particle_id> is the id of the particle whose collision particles wants to be known.\n" +
 									"* force <path/to/static.dat> <path/to/dynamic.dat> <rc> <periodicLimit> :\n" +
-									"\t runs the brute force method, using information provided by both files.\n";
+									"\t runs the brute force method, using information provided by both files.\n" +
+									"* lattice <path/to/static.dat> <path/to/dynamic.dat> <rc> <maxTime> <disturbance>\n" +
+									"\t runs the off-lattice automaton. Uses the disturbance value to randomly change the " +
+									"orientation of particles each iteration. The simulation lasts maxTime iterations.\n";
 	
 	// Exit Codes
 	enum EXIT_CODE {
@@ -89,6 +90,7 @@ public class Main {
 		* generate dynamic dat => gen dynamicdat data/static.dat
 		* generate ovito => gen ovito data/static.dat data/dynamic.dat data/output.dat <particle_id>
 		* run cell index method => cim data/static.dat data/dynamic.dat M rc periodicLimit
+		* run off-lattice automaton => lattice data/static.dat data/dynamic.dat rc maxTime disturbance
 */
 	public static void main(String[] args) {
 		if (args.length == 0) {
@@ -109,6 +111,8 @@ public class Main {
 			case "force":
 				bruteForceMethod(args);
 				break;
+			case "lattice":
+				offLattice(args);
 			default:
 				System.out.println("[FAIL] - Invalid argument. Try 'help' for more information.");
 				exit(BAD_ARGUMENT);
@@ -242,6 +246,64 @@ public class Main {
 
 		// write pointsWithNeighbours to a file called "output.dat"
 		generateOutputDatFile(pointsWithNeighbours, deltaTime);
+	}
+
+	private static void offLattice(final String[] args) {
+		if (args.length != 6) {
+			System.out.println("[FAIL] - Bad number of arguments. Try 'help' for more information.");
+			exit(BAD_N_ARGUMENTS);
+		}
+
+		// create points' set with static and dynamic files
+		final StaticData staticData = loadStaticFile(args[1]);
+
+		//TODO: Add particle's orientation to dynamic files
+		final Set<Point> points = loadDynamicFile(args[2], staticData);
+
+		// parse rc, maxTime, range
+		double rc = 0;
+		try {
+			rc = Double.parseDouble(args[3]);
+		} catch (NumberFormatException e) {
+			LOGGER.warn("[FAIL] - <rc> must be a number. Caused by: ", e);
+			System.out.println("[FAIL] - <rc> argument must be a number. Try 'help' for more information.");
+			exit(BAD_ARGUMENT);
+		}
+
+		int maxTime = 0;
+		try {
+			maxTime = Integer.parseInt(args[4]);
+		} catch (NumberFormatException e) {
+			LOGGER.warn("[FAIL] - <maxTime> must be a number. Caused by: ", e);
+			System.out.println("[FAIL] - <maxTime> argument must be a number. Try 'help' for more information.");
+			exit(BAD_ARGUMENT);
+		}
+
+		double disturbance = 0;
+		try {
+			disturbance = Double.parseDouble(args[5]);
+		} catch (NumberFormatException e) {
+			LOGGER.warn("[FAIL] - <disturbance> must be a number. Caused by: ", e);
+			System.out.println("[FAIL] - <disturbance> argument must be a number. Try 'help' for more information.");
+			exit(BAD_ARGUMENT);
+		}
+
+		if ( rc<0 || maxTime<1 || disturbance < 0 || staticData.L <= 0 ) {
+			System.out.println("[FAIL] - The following must not happen: rc < 0 or maxTime <1 or or " +
+					"disturbance < 0 or L <= 0.\nPlease check the input files.");
+			exit(BAD_ARGUMENT);
+		}
+
+		// calculate optimus M
+		int M = (int) Math.floor(staticData.L/rc);
+
+		// run offLattice automaton
+		final OffLattice offLattice = new OffLatticeImpl();
+		for(int i=1; i<maxTime; i++){
+			Set<Point> updatedParticles = offLattice.run(points, staticData.L, M, rc, disturbance);
+			// write updatedParticles to a file called "output.dat"
+			//generateOutputDatFile(updatedParticles, i);
+		}
 	}
 	
 	private static void generateOutputDatFile(final Map<Point, Set<Point>> pointsWithNeighbours, final long deltaTime) {
