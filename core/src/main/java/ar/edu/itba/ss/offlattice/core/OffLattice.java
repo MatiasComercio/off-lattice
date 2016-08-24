@@ -36,7 +36,7 @@ public class OffLattice {
             final double newOrientation = updateOrientation(point, neighbours, noiseAmplitude);
 
             //TODO: Avoid creating a new point with a new id because it may be inefficient
-            final Point current = point.withX(point.x()+newPosition[0]).withY(point.y()+newPosition[1]).withOrientation(newOrientation);
+            final Point current = point.withX(newPosition[0]).withY(newPosition[1]).withOrientation(newOrientation);
             movedParticles.add(current);
         }
 

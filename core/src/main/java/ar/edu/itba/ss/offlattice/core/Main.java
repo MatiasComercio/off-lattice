@@ -45,9 +45,7 @@ public class Main {
                     "* gen ovito <path/to/static.dat> <path/to/dynamic.dat> <path/to/output.dat> <particle_id> : \n"+
                     "\t generates an output/graphics.xyz file (for Ovito) with the result of the cell index\n " +
                     "\t method (<output.dat>) generated with the other two files.\n" +
-                    "\t <particle_id> is the id of the particle whose collision particles wants to be known.\n" +
-                    "* force <path/to/static.dat> <path/to/dynamic.dat> <rc> <periodicLimit> :\n" +
-                    "\t runs the brute force method, using information provided by both files.\n";
+                    "\t <particle_id> is the id of the particle whose collision particles wants to be known.\n";
 
     // Exit Codes
     enum EXIT_CODE {
@@ -76,10 +74,9 @@ public class Main {
 
     /*
     Options:
-        * generate static dat => gen staticdat N L r
+        * generate static dat => gen staticdat N L v r
         * generate dynamic dat => gen dynamicdat data/static.dat
         * run off-lattice automaton => lattice data/static.dat data/dynamic.dat rc maxTime disturbance
-
 
         * generate ovito => gen ovito data/static.dat data/dynamic.dat data/output.dat <particle_id>
     */
@@ -117,7 +114,6 @@ public class Main {
         // create points' set with static and dynamic files
         final StaticData staticData = loadStaticFile(args[1]);
 
-        //TODO: Add particle's orientation to dynamic files
         final Set<Point> points = loadDynamicFile(args[2], staticData);
 
         // parse rc, maxTime, range
@@ -157,7 +153,6 @@ public class Main {
         // calculate optimus M
         int M = (int) Math.floor(staticData.L/rc);
 
-
         // Create file for first iteration
         final File dataFolder = new File(DESTINATION_FOLDER);
         dataFolder.mkdirs(); // tries to make directories for the .dat files
@@ -172,8 +167,9 @@ public class Main {
 
         // run offLattice automaton
         final OffLattice offLattice = new OffLattice();
+        Set<Point> updatedParticles = points;
         for(long i=1; i<maxTime; i++){
-            Set<Point> updatedParticles = offLattice.run(points, staticData.L, M, rc, disturbance);
+            updatedParticles = offLattice.run(updatedParticles, staticData.L, M, rc, disturbance);
 
             // write updatedParticles to a file called "output.dat"
             generateOutputDatFile(updatedParticles, i);
@@ -392,7 +388,7 @@ public class Main {
         }
 
 		/* write the new dynamic.dat file */
-        final String pointsAsFileFormat = pointsToString(pointsSet, 0);
+        final String pointsAsFileFormat = pointsToString(pointsSet);
 
         BufferedWriter writer = null;
         try {
@@ -416,10 +412,19 @@ public class Main {
         }
     }
 
+    // Used for iteration 0
+    private static String pointsToString(final Set<Point> pointsSet) {
+        final StringBuffer sb = new StringBuffer();
+        sb.append(0).append('\n');
+        pointsSet.forEach(point -> sb.append(point.x()).append('\t').append(point.y()).append('\t')
+                .append(point.orientation()).append('\n'));
+        return sb.toString();
+    }
+
     private static String pointsToString(final Set<Point> pointsSet, long iteration) {
         final StringBuffer sb = new StringBuffer();
         sb.append(iteration).append('\n');
-        pointsSet.forEach(point -> sb.append(point.x()).append('\t').append(point.y()).append('\t')
+        pointsSet.forEach(point -> sb.append(point.id()).append('\t').append(point.x()).append('\t').append(point.y()).append('\t')
                 .append(point.velocity() * Math.cos(point.orientation())).append('\t')
                 .append(point.velocity() * Math.sin(point.orientation())).append('\n'));
         return sb.toString();

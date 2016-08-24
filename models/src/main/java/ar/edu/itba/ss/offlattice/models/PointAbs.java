@@ -38,8 +38,11 @@ public abstract class PointAbs {
 		return 0.03;
 	}
 
+	@Value.Default
 	@Value.Auxiliary
-	public abstract double orientation();
+	public double orientation(){
+		return 0;
+	}
 	
 	@Value.Check
 	protected void checkRadio() {
