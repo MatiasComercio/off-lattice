@@ -32,7 +32,7 @@ public class PointFactory {
 	                               final Point rightTopPoint,
 	                               final double[] radios,
 	                               final boolean canCollide,
-	                               final int maxTries) {
+	                               final int maxTries, double velocity) {
 		final double minX, minY, maxX, maxY;
 		if (leftBottomPoint != null) {
 			minX = leftBottomPoint.x();
@@ -53,7 +53,7 @@ public class PointFactory {
 		final Set<Point> generatedPoints = new HashSet<>(amount);
 		
 		int tries;
-		double pX, pY, pR;
+		double pX, pY, pR, pOrientation;
 		
 		for (int i = 0 ; i < amount ; i++) {
 			Point p;
@@ -62,8 +62,9 @@ public class PointFactory {
 				pX = randomDouble(minX, maxX);
 				pY = randomDouble(minY, maxY);
 				pR = radios[i] <= -1 ? 0 : radios[i];
+				pOrientation = randomDouble(0, 2 * Math.PI);
 				
-				p = Point.builder(pX, pY).radio(pR).build();
+				p = Point.builder(pX, pY).radio(pR).orientation(pOrientation).velocity(velocity).build();
 				
 				tries ++;
 				if (tries > maxTries) {
@@ -98,10 +99,10 @@ public class PointFactory {
 	                               final double radio,
 	                               final int amount,
 	                               final boolean canCollide,
-	                               final int maxTries) {
+	                               final int maxTries, double velocity) {
 		double[] radios = new double[amount];
 		Arrays.fill(radios, radio);
-		return randomPoints(leftBottomPoint, rightTopPoint, radios, canCollide, maxTries);
+		return randomPoints(leftBottomPoint, rightTopPoint, radios, canCollide, maxTries, velocity);
 	}
 	
 	/**
@@ -125,8 +126,8 @@ public class PointFactory {
 	 *                 If this limit is reached, the set as is at that moment is returned
 	 * @return a set containing the generated points - could have less than amount points
 	 */
-	public Set<Point> randomPoints(final int amount, final boolean canCollide, final int maxTries) {
-		return randomPoints(null, null, -1, amount, canCollide, maxTries);
+	public Set<Point> randomPoints(final int amount, final boolean canCollide, final int maxTries, double velocity) {
+		return randomPoints(null, null, -1, amount, canCollide, maxTries, velocity);
 	}
 	
 	/**

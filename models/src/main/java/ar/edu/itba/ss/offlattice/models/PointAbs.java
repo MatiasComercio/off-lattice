@@ -33,10 +33,12 @@ public abstract class PointAbs {
 	}
 
 	@Value.Default
+	@Value.Auxiliary
 	public double velocity() {
 		return 0.03;
 	}
 
+	@Value.Auxiliary
 	public abstract double orientation();
 	
 	@Value.Check
