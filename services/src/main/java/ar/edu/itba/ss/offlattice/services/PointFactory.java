@@ -58,10 +58,10 @@ public class PointFactory {
 			Point p;
 			tries = 0;
 			do {
-				pX = randomDouble(minX, maxX);
-				pY = randomDouble(minY, maxY);
+				pX = random.randomDouble(minX, maxX);
+				pY = random.randomDouble(minY, maxY);
 				pR = radios[i] <= -1 ? 0 : radios[i];
-				pOrientation = randomDouble(0, 2 * Math.PI);
+				pOrientation = random.randomDouble(0, 2 * Math.PI);
 
 				p = Point.builder(pX, pY).radio(pR).orientation(pOrientation).velocity(velocity).build();
 				
@@ -103,17 +103,6 @@ public class PointFactory {
 		Arrays.fill(radios, radio);
 		return randomPoints(leftBottomPoint, rightTopPoint, radios, canCollide, maxTries, velocity);
 	}
-	
-	/**
-	 * Gets a new pseudo-aleatory random double between the min (inclusive) and max (exclusive) values
-	 * @param min the min value
-	 * @param max the max value
-	 * @return a value between the min (inclusive) and the max (exclusive) value
-	 */
-	public double randomDouble(final double min, final double max) {
-		return min + random.nextDouble() * max;
-	}
-	
 	
 	/**
 	 * Generates in a pseudo-aleatory manner the given amount of points.
