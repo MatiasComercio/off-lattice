@@ -33,7 +33,7 @@ public abstract class PointAbs {
 	}
 
 	@Value.Default
-	public double velocity() {
+	public double speed() {
 		return 0.03;
 	}
 

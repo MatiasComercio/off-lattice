@@ -8,53 +8,67 @@ import java.util.Map;
 import java.util.Set;
 
 public class OffLatticeImpl implements OffLattice {
+    private final RandomInRange random;
+
+    public OffLatticeImpl() {
+        random = new RandomInRange();
+    }
 
     @Override
-    public Set<Point> run(final Set<Point> points, double L, int M, double rc, double disturbance) {
-        CellIndexMethodImpl cim = new CellIndexMethodImpl();
-        Map<Point,Set<Point>> neighbours = cim.run(points, L, M, rc, true);
-        Set<Point> movedParticles = UpdateParticles(points, neighbours, disturbance);
+    public Set<Point> run(final Set<Point> points, final double L, final int M,
+                          final double rc, final double speedAmplitude) {
+        final CellIndexMethodImpl cim = new CellIndexMethodImpl();
+        final Map<Point,Set<Point>> neighbours = cim.run(points, L, M, rc, true);
+        final Set<Point> movedParticles = updateParticles(neighbours, speedAmplitude);
+
         return movedParticles;
     }
 
-    Set<Point> UpdateParticles(Set<Point> points, Map<Point, Set<Point>> nb, double disturbance){
+    private Set<Point> updateParticles(final Map<Point, Set<Point>> neighboursMap, final double noiseAmplitude) {
+        final Set<Point> movedParticles = new HashSet<>(neighboursMap.size());
 
-        Set<Point> movedParticles = new HashSet<>(points.size());
-        for(Point p: points){
-            double[] pos = UpdatePosition(p);
-            double orientation = UpdateOrientation(p, nb.get(p), disturbance);
-            //TODO: Check whether this method preserves id. Does this line create 3 new instances of Point?
-            Point current = p.withX(p.x()+pos[0]).withY(p.y()+pos[1]).withOrientation(orientation);
+        for(final Map.Entry<Point, Set<Point>> pointEntry: neighboursMap.entrySet()) {
+            final Point point = pointEntry.getKey();
+            final Set<Point> neighbours = pointEntry.getValue();
+
+            final double[] newPosition = updatePosition(point);
+            final double newOrientation = updateOrientation(point, neighbours, noiseAmplitude);
+
+            //TODO: Avoid creating a new point with a new id because it may be inefficient
+            final Point current = point.withX(point.x()+newPosition[0]).withY(point.y()+newPosition[1]).withOrientation(newOrientation);
             movedParticles.add(current);
         }
+
         return movedParticles;
     }
 
-    double[] UpdatePosition(Point cur){
-        double[] pos = new double[2];
-        pos[0] = cur.x() + ( Math.cos(cur.orientation()) * cur.velocity() );
-        pos[1] = cur.y() + ( Math.sin(cur.orientation()) * cur.velocity() );
+    private double[] updatePosition(final Point point) {
+        final double[] pos = new double[2];
+
+        pos[0] = point.x() + ( Math.cos(point.orientation()) * point.speed() );
+        pos[1] = point.y() + ( Math.sin(point.orientation()) * point.speed() );
+
         return pos;
     }
 
-    double UpdateOrientation(Point cur, Set<Point> nb, double disturbance){
-        //NOTE: For this method, randomDouble's privacy was changed to public
-        double noise = PointFactory.getInstance().randomDouble(-disturbance/2, disturbance/2);
-        double avg = DegreeAverage(cur, nb);
-        return noise + avg;
+    private double updateOrientation(final Point point, final Set<Point> neighbours, final double noiseAmplitude) {
+        final double noise = random.randomDouble(-noiseAmplitude/2, noiseAmplitude/2);
+        final double orientationAvg = orientationAverage(point, neighbours);
+
+        return orientationAvg + noise;
     }
 
-    double DegreeAverage(Point cur, Set<Point> nb){
-        double sinAvg = Math.sin(cur.orientation()), cosAvg = Math.cos(cur.orientation());
+    private double orientationAverage(final Point point, final Set<Point> neighbours) {
+        double sinAvg = Math.sin(point.orientation());
+        double cosAvg = Math.cos(point.orientation());
 
-        for(Point p: nb){
-            sinAvg += Math.sin(p.orientation());
-            cosAvg += Math.cos(p.orientation());
+        for(final Point neighbour: neighbours){
+            sinAvg += Math.sin(neighbour.orientation());
+            cosAvg += Math.cos(neighbour.orientation());
         }
-        sinAvg /= (nb.size()+1);
-        cosAvg /= (nb.size()+1);
+        sinAvg /= (neighbours.size()+1);
+        cosAvg /= (neighbours.size()+1);
 
         return Math.atan2(sinAvg, cosAvg);
     }
-
 }

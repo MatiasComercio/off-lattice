@@ -8,7 +8,7 @@ public interface OffLattice {
 
     /**
      * Runs a single iteration of an Off Lattice Autamaton.
-     * Each particle moves in the direction it was pointing according to it's own velocity.
+     * Each particle moves in the direction it was pointing according to it's own speed.
      * At the same time the each point's orientation is changed according to it's neighbours (particles inside
      * the rc radius). Neighbours are calculated before points start to move.
      * @param L length of the side of the square containing all the points of the set. Must be positive.

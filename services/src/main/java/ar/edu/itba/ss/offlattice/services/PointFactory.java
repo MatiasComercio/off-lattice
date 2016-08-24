@@ -4,19 +4,18 @@ import ar.edu.itba.ss.offlattice.models.Point;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 public class PointFactory {
 	private static PointFactory pointFactory;
-	private final Random random;
+	private final RandomInRange random;
 	
 	private PointFactory() {
-		random = new Random();
+		random = new RandomInRange();
 	}
 	
 	/* for testing purposes */
-	/* default */ PointFactory(final Random random) {
+	/* default */ PointFactory(final RandomInRange random) {
 		this.random = random;
 	}
 	
@@ -54,23 +53,23 @@ public class PointFactory {
 		
 		int tries;
 		double pX, pY, pR;
-		
-		for (int i = 0 ; i < amount ; i++) {
+
+		for (double radio : radios) {
 			Point p;
 			tries = 0;
 			do {
-				pX = randomDouble(minX, maxX);
-				pY = randomDouble(minY, maxY);
-				pR = radios[i] <= -1 ? 0 : radios[i];
-				
+				pX = random.randomDouble(minX, maxX);
+				pY = random.randomDouble(minY, maxY);
+				pR = radio <= -1 ? 0 : radio;
+
 				p = Point.builder(pX, pY).radio(pR).build();
-				
-				tries ++;
+
+				tries++;
 				if (tries > maxTries) {
 					return generatedPoints;
 				}
 			} while (!passCollisionCondition(generatedPoints, p, canCollide));
-			
+
 			// for sure that the point is not at the set; if it were, it would have collied with itself
 			generatedPoints.add(p);
 		}
@@ -103,17 +102,6 @@ public class PointFactory {
 		Arrays.fill(radios, radio);
 		return randomPoints(leftBottomPoint, rightTopPoint, radios, canCollide, maxTries);
 	}
-	
-	/**
-	 * Gets a new pseudo-aleatory random double between the min (inclusive) and max (exclusive) values
-	 * @param min the min value
-	 * @param max the max value
-	 * @return a value between the min (inclusive) and the max (exclusive) value
-	 */
-	public double randomDouble(final double min, final double max) {
-		return min + random.nextDouble() * max;
-	}
-	
 	
 	/**
 	 * Generates in a pseudo-aleatory manner the given amount of points.
