@@ -24,20 +24,24 @@ public class OffLattice {
         return movedParticles;
     }
 
-    private Set<Point> updateParticles(final Map<Point, Set<Point>> neighboursMap, final double noiseAmplitude,
-                                       double L) {
+    private Set<Point> updateParticles(final Map<Point, Set<Point>> neighboursMap,
+                                       final double noiseAmplitude, double L) {
         final Set<Point> movedParticles = new HashSet<>(neighboursMap.size());
 
         for(final Map.Entry<Point, Set<Point>> pointEntry: neighboursMap.entrySet()) {
-            final Point point = pointEntry.getKey();
+            final Point currentPoint = pointEntry.getKey();
             final Set<Point> neighbours = pointEntry.getValue();
 
-            final double[] newPosition = updatePosition(point, L);
-            final double newOrientation = updateOrientation(point, neighbours, noiseAmplitude);
+            final double[] newPosition = updatePosition(currentPoint, L);
+            final double newOrientation = updateOrientation(currentPoint, neighbours, noiseAmplitude);
 
-            //TODO: Avoid creating a new point with a new id because it may be inefficient
-            final Point current = point.withX(newPosition[0]).withY(newPosition[1]).withOrientation(newOrientation);
-            movedParticles.add(current);
+            final Point nextPoint = Point.builder(newPosition[0], newPosition[1])
+                    .id(currentPoint.id())
+                    .radio(currentPoint.radio())
+                    .speed(currentPoint.speed())
+                    .orientation(newOrientation)
+                    .build();
+            movedParticles.add(nextPoint);
         }
 
         return movedParticles;
@@ -46,8 +50,8 @@ public class OffLattice {
     private double[] updatePosition(final Point point, double L) {
         final double[] pos = new double[2];
 
-        pos[0] = point.x() + ( Math.cos(point.orientation()) * point.velocity() );
-        pos[1] = point.y() + ( Math.sin(point.orientation()) * point.velocity() );
+        pos[0] = point.x() + ( Math.cos(point.orientation()) * point.speed() );
+        pos[1] = point.y() + ( Math.sin(point.orientation()) * point.speed() );
 
         // Check particle didn't go out of range
         if(pos[0] > L){

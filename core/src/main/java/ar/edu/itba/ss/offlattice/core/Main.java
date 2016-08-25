@@ -249,12 +249,12 @@ public class Main {
                     exit(BAD_ARGUMENT);
                 }
 
-                double velocity = 0;
+                double speed = 0;
                 try {
-                    velocity = Double.parseDouble(args[4]);
+                    speed = Double.parseDouble(args[4]);
                 } catch (NumberFormatException e) {
-                    LOGGER.warn("[FAIL] - <velocity> must be a number. Caused by: ", e);
-                    System.out.println("[FAIL] - <velocity> argument must be a number. Try 'help' for more information.");
+                    LOGGER.warn("[FAIL] - <speed> must be a number. Caused by: ", e);
+                    System.out.println("[FAIL] - <speed> argument must be a number. Try 'help' for more information.");
                     exit(BAD_ARGUMENT);
                 }
 
@@ -268,7 +268,7 @@ public class Main {
                 }
 
                 // create the points position, given the static.dat file
-                generateStaticDatFile(N, L, velocity, r);
+                generateStaticDatFile(N, L, speed, r);
 
                 break;
             case "dynamicdat":
@@ -362,11 +362,11 @@ public class Main {
     private static void generateDynamicDatFile(final StaticData staticData) {
         final PointFactory pF = PointFactory.getInstance();
 
-        final Point leftBottomPoint = Point.builder(0, 0).velocity(0).orientation(0).build();
-        final Point rightTopPoint = Point.builder(staticData.L, staticData.L).velocity(0).orientation(0).build();
+        final Point leftBottomPoint = Point.builder(0, 0).speed(0).orientation(0).build();
+        final Point rightTopPoint = Point.builder(staticData.L, staticData.L).speed(0).orientation(0).build();
 
         final Set<Point> pointsSet = pF.randomPoints(leftBottomPoint, rightTopPoint,
-                staticData.radios, false, Integer.MAX_VALUE, staticData.velocity);
+                staticData.radios, false, Integer.MAX_VALUE, staticData.speed);
 
         if (pointsSet.size() < staticData.radios.length) {
             System.out.println("[FAIL] - Could not generate all the particles from the static file.\n" +
@@ -425,8 +425,8 @@ public class Main {
         final StringBuffer sb = new StringBuffer();
         sb.append(iteration).append('\n');
         pointsSet.forEach(point -> sb.append(point.id()).append('\t').append(point.x()).append('\t').append(point.y()).append('\t')
-                .append(point.velocity() * Math.cos(point.orientation())).append('\t')
-                .append(point.velocity() * Math.sin(point.orientation())).append('\n'));
+                .append(point.speed() * Math.cos(point.orientation())).append('\t')
+                .append(point.speed() * Math.sin(point.orientation())).append('\n'));
         return sb.toString();
     }
 
@@ -618,7 +618,7 @@ public class Main {
     private static class StaticData {
         private int N;
         private double L;
-        private double velocity;
+        private double speed;
         private double[] radios;
     }
 
@@ -641,7 +641,7 @@ public class Main {
             staticData.L = Double.valueOf(staticFileLines.next());
 
             // get Velocity
-            staticData.velocity = Double.valueOf(staticFileLines.next());
+            staticData.speed = Double.valueOf(staticFileLines.next());
 
             // get radios
             staticData.radios = new double[staticData.N];
@@ -699,7 +699,7 @@ public class Main {
                 x = intScanner.nextDouble(); // caught InputMismatchException
                 y = intScanner.nextDouble(); // caught InputMismatchException
                 orientation = intScanner.nextDouble();
-                points.add(Point.builder(x,y).radio(staticData.radios[i]).velocity(staticData.velocity)
+                points.add(Point.builder(x,y).radio(staticData.radios[i]).speed(staticData.speed)
                         .orientation(orientation).build());
             }
 

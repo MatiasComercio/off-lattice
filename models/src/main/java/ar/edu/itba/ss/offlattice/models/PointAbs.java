@@ -13,7 +13,7 @@ public abstract class PointAbs {
 	
 	private static long idGen = 1;
 	
-	@Value.Derived
+	@Value.Default
 	public long id() {
 		return idGen ++;
 	}
@@ -34,7 +34,7 @@ public abstract class PointAbs {
 
 	@Value.Default
 	@Value.Auxiliary
-	public double velocity() {
+	public double speed() {
 		return 0.03;
 	}
 

@@ -31,7 +31,8 @@ public class PointFactory {
 	                               final Point rightTopPoint,
 	                               final double[] radios,
 	                               final boolean canCollide,
-	                               final int maxTries, double velocity) {
+	                               final int maxTries,
+								   final double speed) {
 		final double minX, minY, maxX, maxY;
 		if (leftBottomPoint != null) {
 			minX = leftBottomPoint.x();
@@ -63,7 +64,7 @@ public class PointFactory {
 				pR = radios[i] <= -1 ? 0 : radios[i];
 				pOrientation = random.randomDouble(0, 2 * Math.PI);
 
-				p = Point.builder(pX, pY).radio(pR).orientation(pOrientation).velocity(velocity).build();
+				p = Point.builder(pX, pY).radio(pR).orientation(pOrientation).speed(speed).build();
 				
 				tries ++;
 				if (tries > maxTries) {
@@ -98,10 +99,10 @@ public class PointFactory {
 	                               final double radio,
 	                               final int amount,
 	                               final boolean canCollide,
-	                               final int maxTries, double velocity) {
+	                               final int maxTries, double speed) {
 		double[] radios = new double[amount];
 		Arrays.fill(radios, radio);
-		return randomPoints(leftBottomPoint, rightTopPoint, radios, canCollide, maxTries, velocity);
+		return randomPoints(leftBottomPoint, rightTopPoint, radios, canCollide, maxTries, speed);
 	}
 	
 	/**
