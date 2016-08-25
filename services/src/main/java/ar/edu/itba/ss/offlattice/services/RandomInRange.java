@@ -16,6 +16,6 @@ public class RandomInRange {
      * @return a value between the min (inclusive) and the max (exclusive) value
      */
     public double randomDouble(final double min, final double max) {
-        return min + random.nextDouble() * max;
+        return min + random.nextDouble() * (max-min);
     }
 }

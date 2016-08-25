@@ -74,7 +74,6 @@ public class Main {
         * generate static dat => gen staticdat N L v r
         * generate dynamic dat => gen dynamicdat data/static.dat
         * run off-lattice automaton => lattice data/static.dat data/dynamic.dat rc maxTime disturbance
-
         * generate ovito => gen ovito data/static.dat data/dynamic.dat data/output.dat <particle_id>
     */
     public static void main(String[] args) {
