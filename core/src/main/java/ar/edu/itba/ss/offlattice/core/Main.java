@@ -40,12 +40,9 @@ public class Main {
                     "* lattice <path/to/static.dat> <path/to/dynamic.dat> <rc> <maxTime> <disturbance>\n" +
                     "\t runs the off-lattice automaton. Uses the disturbance value to randomly change the " +
                     "orientation of particles each iteration. The simulation lasts maxTime iterations.\n" +
-
-                    //TODO: OffLattice output is currently beign used for ovito directly.
-                    "* gen ovito <path/to/static.dat> <path/to/dynamic.dat> <path/to/output.dat> <particle_id> : \n"+
-                    "\t generates an output/graphics.xyz file (for Ovito) with the result of the cell index\n " +
-                    "\t method (<output.dat>) generated with the other two files.\n" +
-                    "\t <particle_id> is the id of the particle whose collision particles wants to be known.\n";
+                    "* gen ovito <path/to/static.dat> <path/to/output.dat> : \n"+
+                    "\t generates an output/graphics.xyz file (for Ovito) with the result of the off lattice\n " +
+                    "\t automaton(<output.dat>) generated with the other two files.\n";
 
     // Exit Codes
     enum EXIT_CODE {
@@ -168,6 +165,7 @@ public class Main {
         // run offLattice automaton
         final OffLattice offLattice = new OffLattice();
         Set<Point> updatedParticles = points;
+
         for(long i=1; i<maxTime; i++){
             updatedParticles = offLattice.run(updatedParticles, staticData.L, M, rc, disturbance);
 
@@ -195,8 +193,8 @@ public class Main {
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(pathToDatFile.toFile(), true));
-            writer.write(String.valueOf(updatedParticles.size()));
-            writer.write("\n");
+//            writer.write(String.valueOf(updatedParticles.size()));
+//            writer.write("\n");
             writer.write(data);
 
         } catch (IOException e) {
@@ -286,23 +284,15 @@ public class Main {
 
             case "ovito":
                 // get particle id
-                if (args.length != 6) {
+                if (args.length != 4) {
                     System.out.println("[FAIL] - Bad number of arguments. Try 'help' for more information.");
                     exit(BAD_N_ARGUMENTS);
                 }
 
                 final String staticFile = args[2];
-                final String dynamicFile = args[3];
-                final String outputFile = args[4];
+                final String outputFile = args[3];
 
-                try {
-                    final int particleId = Integer.parseInt(args[5]);
-                    generateOvitoFile(staticFile, dynamicFile, outputFile, particleId);
-                } catch (NumberFormatException e) {
-                    LOGGER.warn("[FAIL] - <particle_id> must be a number. Caused by: ", e);
-                    System.out.println("[FAIL] - <particle_id> must be a number. Try 'help' for more information.");
-                    exit(BAD_ARGUMENT);
-                }
+                generateOvitoFile(staticFile, outputFile);
                 break;
 
             default:
@@ -412,7 +402,7 @@ public class Main {
         }
     }
 
-    // Used for iteration 0
+    // Used for building dynamic file
     private static String pointsToString(final Set<Point> pointsSet) {
         final StringBuffer sb = new StringBuffer();
         sb.append(0).append('\n');
@@ -420,7 +410,7 @@ public class Main {
                 .append(point.orientation()).append('\n'));
         return sb.toString();
     }
-
+    // Used for building output.dat
     private static String pointsToString(final Set<Point> pointsSet, long iteration) {
         final StringBuffer sb = new StringBuffer();
         sb.append(iteration).append('\n');
@@ -432,22 +422,17 @@ public class Main {
 
     /**
      *  Generate a .XYZ file which contains the following information about a particle:
-     *  - Radius
      *  - X Position
      *  - Y Position
-     *  - Particle Type (For more information about how the value is saved, refer to the ParticleType Class):
-     *  	If it is the particleId then it is IMPORTANT
-     *  	If it is a neighbour of the particleId then it is NEIGHBOUR
-     *  	Else, it is UNIMPORTANT
+     *  - X Speed
+     *  - Y Speed
      *  By default, the output file is 'graphics.xyz' which is stored in the 'data' folder.
      * @param staticFile
-     * @param dynamicFile
      * @param outputFile
-     * @param particleId id of the particle to be assigned a color and in which its neighbours will
      */
-    private static void generateOvitoFile(final String staticFile, final String dynamicFile, final String outputFile, final int particleId) {
+    private static void generateOvitoFile(final String staticFile, final String outputFile) {
         final Path pathToStaticDatFile = Paths.get(staticFile);
-        final Path pathToDynamicDatFile = Paths.get(dynamicFile);
+        final Path pathToOutputDatFile = Paths.get(outputFile);
         final Path pathToGraphicsFile = Paths.get(DESTINATION_FOLDER, OVITO_FILE);
 
         // save data to a new file
@@ -460,15 +445,15 @@ public class Main {
         }
 
         Stream<String> staticDatStream = null;
-        Stream<String> dynamicDatStream = null;
+        Stream<String> outputDatStream = null;
 
         try {
             staticDatStream = Files.lines(pathToStaticDatFile);
-            dynamicDatStream = Files.lines(pathToDynamicDatFile);
+            outputDatStream = Files.lines(pathToOutputDatFile);
         } catch (IOException e) {
             LOGGER.warn("Could not read a file. Details: ", e);
             System.out.println("Could not read one of these files: '" + pathToStaticDatFile + "' or '"
-                    + pathToDynamicDatFile + "'.\n" +
+                    + pathToOutputDatFile + "'.\n" +
                     "Check the logs for a detailed info.\n" +
                     "Aborting...");
             exit(UNEXPECTED_ERROR);
@@ -477,63 +462,59 @@ public class Main {
         BufferedWriter writer = null;
 
         try {
-            final String stringN; // N as string
-            final int N;
+            String stringN; // N as string
+            String iterationNum, borderParticles;
+            int N;
+            final double L;
             final Iterator<String> staticDatIterator;
-            final Iterator<String> dynamicDatIterator;
+            final Iterator<String> outputDatIterator;
+            final StringBuffer sb = new StringBuffer();
 
             writer = new BufferedWriter(new FileWriter(pathToGraphicsFile.toFile()));
             staticDatIterator = staticDatStream.iterator();
-            dynamicDatIterator = dynamicDatStream.iterator();
-
-
-            final Collection<Integer> neighbours = getNeighbours(outputFile, particleId);
-
-            if(neighbours == null) {
-                return;
-            }
+            outputDatIterator = outputDatStream.iterator();
 
             // Write number of particles
             stringN = staticDatIterator.next();
-            writer.write(stringN);
-            writer.newLine();
-
-            // Write a comment - mandatory for ovito
-            writer.write("This is a comment");
-            writer.newLine();
-
-            // Prepare to feed the lines
             N = Integer.valueOf(stringN);
-            staticDatIterator.next(); //Skip L value
-            dynamicDatIterator.next(); //Skip t0 value
+            L = Double.valueOf(staticDatIterator.next());
 
-			/*
-				Write particle information in this order
-				Particle_Type	Radius	X_Pos	Y_Pos
-			*/
-            for(int i = FIRST_PARTICLE; i <= N; i++) {
-                // write particle id
-                writer.write(String.valueOf(i));
-                writer.write("\t");
+            // Create virtual particles in the borders, in order for Ovito to show the whole board
+            sb.append(N+1).append('\t').append(0).append('\t').append(0).append('\t').append(0)
+                    .append('\t').append(0).append('\n');
+            sb.append(N+2).append('\t').append(0).append('\t').append(L).append('\t').append(0)
+                    .append('\t').append(0).append('\n');
+            sb.append(N+3).append('\t').append(L).append('\t').append(0).append('\t').append(0)
+                    .append('\t').append(0).append('\n');
+            sb.append(N+4).append('\t').append(L).append('\t').append(L).append('\t').append(0)
+                    .append('\t').append(0).append('\n');
 
-                // Write Particle Type
-                if(i == particleId) {
-                    writer.write(ParticleType.IMPORTANT.toString());
-                } else if(neighbours.contains(i)) {
-                    writer.write(ParticleType.NEIGHBOUR.toString());
-                } else {
-                    writer.write(ParticleType.UNIMPORTANT.toString());
-                }
-                writer.write("\t");
+            stringN = String.valueOf(N+4);
 
-                // Write Radius
-                writer.write(staticDatIterator.next() + "\t");
+            borderParticles = sb.toString();
 
-                // Write X_Pos and Y_Pos
-                writer.write(dynamicDatIterator.next() + "\t");
-
-                // End line
+            while(outputDatIterator.hasNext()){
+                // Write ammount of particles (N)
+                writer.write(stringN);
                 writer.newLine();
+
+                // Write iteration number
+                iterationNum = outputDatIterator.next();
+                writer.write(iterationNum);
+                writer.newLine();
+
+                /*
+				Write particle information in this order
+				Particle_Id     X_Pos	Y_Pos   X_Vel   Y_Vel
+			    */
+                for(int i=0; i<N; i++){
+                    writer.write(outputDatIterator.next() + "\n");
+                }
+
+                // Write border particles
+                writer.write(borderParticles);
+
+
             }
         } catch(final IOException e) {
             LOGGER.warn("Could not write to '{}'. Caused by: ", pathToGraphicsFile, e);
@@ -547,7 +528,7 @@ public class Main {
                     writer.close();
                 }
                 staticDatStream.close();
-                dynamicDatStream.close();
+                outputDatStream.close();
             } catch (final IOException ignored) {
 
             }
