@@ -8,17 +8,10 @@ import java.util.Set;
 
 public class PointFactory {
 	private static PointFactory pointFactory;
-	private final RandomInRange random;
-	
+
 	private PointFactory() {
-		random = new RandomInRange();
 	}
-	
-	/* for testing purposes */
-	/* default */ PointFactory(final RandomInRange random) {
-		this.random = random;
-	}
-	
+
 	public static PointFactory getInstance() {
 		if (pointFactory == null) {
 			pointFactory = new PointFactory();
@@ -32,7 +25,7 @@ public class PointFactory {
 	                               final double[] radios,
 	                               final boolean canCollide,
 	                               final int maxTries,
-								   final double speed) {
+	                               final double speed) {
 		final double minX, minY, maxX, maxY;
 		if (leftBottomPoint != null) {
 			minX = leftBottomPoint.x();
@@ -59,10 +52,10 @@ public class PointFactory {
 			Point p;
 			tries = 0;
 			do {
-				pX = random.randomDouble(minX, maxX);
-				pY = random.randomDouble(minY, maxY);
+				pX = RandomInRanges.randomDouble(minX, maxX);
+				pY = RandomInRanges.randomDouble(minY, maxY);
 				pR = radios[i] <= -1 ? 0 : radios[i];
-				pOrientation = random.randomDouble(0, 2 * Math.PI);
+				pOrientation = RandomInRanges.randomDouble(0, 2 * Math.PI);
 
 				p = Point.builder(pX, pY).radio(pR).orientation(pOrientation).speed(speed).build();
 				
@@ -92,6 +85,7 @@ public class PointFactory {
 	 * @param canCollide whether the points can collide or not
 	 * @param maxTries how many times the function will try to generate non-colliding points - consecutively.
 	 *                 If this limit is reached, the set as is at that moment is returned
+	 * @param speed points' speed
 	 * @return a set containing the generated points - could have less than amount points
 	 */
 	public Set<Point> randomPoints(final Point leftBottomPoint,
@@ -99,12 +93,13 @@ public class PointFactory {
 	                               final double radio,
 	                               final int amount,
 	                               final boolean canCollide,
-	                               final int maxTries, double speed) {
+	                               final int maxTries,
+	                               final double speed) {
 		double[] radios = new double[amount];
 		Arrays.fill(radios, radio);
 		return randomPoints(leftBottomPoint, rightTopPoint, radios, canCollide, maxTries, speed);
 	}
-	
+
 	/**
 	 * Generates in a pseudo-aleatory manner the given amount of points.
 	 * Collisions are accepted or not depending the given parameter.
@@ -115,17 +110,17 @@ public class PointFactory {
 	 *                 If this limit is reached, the set as is at that moment is returned
 	 * @return a set containing the generated points - could have less than amount points
 	 */
-	public Set<Point> randomPoints(final int amount, final boolean canCollide, final int maxTries, double velocity) {
-		return randomPoints(null, null, -1, amount, canCollide, maxTries, velocity);
+	public Set<Point> randomPoints(final int amount, final boolean canCollide, final int maxTries, final double speed) {
+		return randomPoints(null, null, -1, amount, canCollide, maxTries, speed);
 	}
-	
+
 	/**
 	 * Checks that the collision condition is passed, comparing the just created point with all the
 	 * previous already obtained
-	 * @param generatedPoints
-	 * @param p
-	 * @param canCollide
-	 * @return
+	 * @param generatedPoints -
+	 * @param p -
+	 * @param canCollide -
+	 * @return -
 	 */
 	private boolean passCollisionCondition(final Set<Point> generatedPoints,
 	                                       final Point p, final boolean canCollide) {

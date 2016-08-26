@@ -2,12 +2,8 @@ package ar.edu.itba.ss.offlattice.services;
 
 import java.util.Random;
 
-public class RandomInRange {
-    private final Random random;
-
-    public RandomInRange() {
-        random = new Random();
-    }
+public class RandomInRanges {
+    private static final Random random= new Random();
 
     /**
      * Gets a new pseudo-aleatory random double between the min (inclusive) and max (exclusive) values
@@ -15,7 +11,7 @@ public class RandomInRange {
      * @param max the max value
      * @return a value between the min (inclusive) and the max (exclusive) value
      */
-    public double randomDouble(final double min, final double max) {
+    public static double randomDouble(final double min, final double max) {
         return min + random.nextDouble() * (max-min);
     }
 }

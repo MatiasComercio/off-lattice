@@ -1,8 +1,7 @@
 package ar.edu.itba.ss.offlattice.core;
 
-import ar.edu.itba.ss.offlattice.models.ParticleType;
 import ar.edu.itba.ss.offlattice.models.Point;
-import ar.edu.itba.ss.offlattice.services.*;
+import ar.edu.itba.ss.offlattice.services.PointFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,12 +17,12 @@ import java.util.stream.Stream;
 
 import static ar.edu.itba.ss.offlattice.core.Main.EXIT_CODE.*;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static final String DESTINATION_FOLDER = "output";
-    private static final int FIRST_PARTICLE = 1;
-    private static final String STATIC_FILE = "static.dat";
+  private static final String STATIC_FILE = "static.dat";
     private static final String DYNAMIC_FILE = "dynamic.dat";
     private static final String OUTPUT_FILE = "output.dat";
     private static final String OVITO_FILE = "graphics.xyz";
@@ -69,13 +68,6 @@ public class Main {
         System.exit(exitCode.getCode());
     }
 
-    /*
-    Options:
-        * generate static dat => gen staticdat N L v r
-        * generate dynamic dat => gen dynamicdat data/static.dat
-        * run off-lattice automaton => lattice data/static.dat data/dynamic.dat rc maxTime disturbance
-        * generate ovito => gen ovito data/static.dat data/dynamic.dat data/output.dat <particle_id>
-    */
     public static void main(String[] args) {
         if (args.length == 0) {
             System.out.println("[FAIL] - No arguments passed. Try 'help' for more information.");
@@ -153,7 +145,7 @@ public class Main {
         final File dataFolder = new File(DESTINATION_FOLDER);
         dataFolder.mkdirs(); // tries to make directories for the .dat files
 
-		/* delete previous dynamic.dat file, if any */
+    /* delete previous dynamic.dat file, if any */
         final Path pathToDatFile = Paths.get(DESTINATION_FOLDER, OUTPUT_FILE);
 
         if(!deleteIfExists(pathToDatFile)) {
@@ -162,11 +154,10 @@ public class Main {
         generateOutputDatFile(points, 0);
 
         // run offLattice automaton
-        final OffLattice offLattice = new OffLattice();
         Set<Point> updatedParticles = points;
 
-        for(long i=1; i<maxTime; i++){
-            updatedParticles = offLattice.run(updatedParticles, staticData.L, M, rc, disturbance);
+        for(long i=1; i<=maxTime; i++){
+            updatedParticles = OffLattices.run(updatedParticles, staticData.L, M, rc, disturbance);
 
             // write updatedParticles to a file called "output.dat"
             generateOutputDatFile(updatedParticles, i);
@@ -186,7 +177,7 @@ public class Main {
 //            return;
 //        }
 
-		/* write the new output.dat file */
+    /* write the new output.dat file */
         final String data = pointsToString(updatedParticles, iteration);
 
         BufferedWriter writer = null;
@@ -301,20 +292,20 @@ public class Main {
         }
     }
 
-    private static void generateStaticDatFile(final int N, final double L, final double velocity,
+    private static void generateStaticDatFile(final int N, final double L, final double speed,
                                               final double r) {
         // save data to a new file
         final File dataFolder = new File(DESTINATION_FOLDER);
         dataFolder.mkdirs(); // tries to make directories for the .dat files
 
-		/* delete previous dynamic.dat file, if any */
+    /* delete previous dynamic.dat file, if any */
         final Path pathToDatFile = Paths.get(DESTINATION_FOLDER, STATIC_FILE);
 
         if(!deleteIfExists(pathToDatFile)) {
             return;
         }
 
-		/* write the new static.dat file */
+    /* write the new static.dat file */
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(pathToDatFile.toFile()));
@@ -322,7 +313,7 @@ public class Main {
             writer.write("\n");
             writer.write(String.valueOf(L));
             writer.write("\n");
-            writer.write(String.valueOf(velocity));
+            writer.write(String.valueOf(speed));
             writer.write("\n");
             String radio = String.valueOf(r);
             for (int i = 0 ; i < N ; i++) {
@@ -369,14 +360,14 @@ public class Main {
         final File dataFolder = new File(DESTINATION_FOLDER);
         dataFolder.mkdirs(); // tries to make directories for the .dat files
 
-		/* delete previous dynamic.dat file, if any */
+    /* delete previous dynamic.dat file, if any */
         final Path pathToDatFile = Paths.get(DESTINATION_FOLDER, DYNAMIC_FILE);
 
         if(!deleteIfExists(pathToDatFile)) {
             return;
         }
 
-		/* write the new dynamic.dat file */
+    /* write the new dynamic.dat file */
         final String pointsAsFileFormat = pointsToString(pointsSet);
 
         BufferedWriter writer = null;
@@ -421,13 +412,14 @@ public class Main {
 
     /**
      *  Generate a .XYZ file which contains the following information about a particle:
+     *  - id
      *  - X Position
      *  - Y Position
      *  - X Speed
      *  - Y Speed
      *  By default, the output file is 'graphics.xyz' which is stored in the 'data' folder.
-     * @param staticFile
-     * @param outputFile
+     * @param staticFile -
+     * @param outputFile -
      */
     private static void generateOvitoFile(final String staticFile, final String outputFile) {
         final Path pathToStaticDatFile = Paths.get(staticFile);
@@ -436,9 +428,10 @@ public class Main {
 
         // save data to a new file
         final File dataFolder = new File(DESTINATION_FOLDER);
+      //noinspection ResultOfMethodCallIgnored
         dataFolder.mkdirs(); // tries to make directories for the .dat files
 
-		/* delete previous dynamic.dat file, if any */
+    /* delete previous dynamic.dat file, if any */
         if(!deleteIfExists(pathToGraphicsFile)) {
             return;
         }
@@ -467,7 +460,7 @@ public class Main {
             final double L;
             final Iterator<String> staticDatIterator;
             final Iterator<String> outputDatIterator;
-            final StringBuffer sb = new StringBuffer();
+            final StringBuilder sb = new StringBuilder();
 
             writer = new BufferedWriter(new FileWriter(pathToGraphicsFile.toFile()));
             staticDatIterator = staticDatStream.iterator();
@@ -503,9 +496,9 @@ public class Main {
                 writer.newLine();
 
                 /*
-				Write particle information in this order
-				Particle_Id     X_Pos	Y_Pos   X_Vel   Y_Vel
-			    */
+                  Write particle information in this order
+                  Particle_Id     X_Pos	Y_Pos   X_Vel   Y_Vel
+                */
                 for(int i=0; i<N; i++){
                     writer.write(outputDatIterator.next() + "\n");
                 }
@@ -534,50 +527,7 @@ public class Main {
         }
     }
 
-    /**
-     * Get the list of id's of neighbours of a specific particle
-     *
-     * @param outputFile
-     * @param particleId id of the particle from which it will retrieve its neighbours
-     * @return null if the particle does not exist;
-     * 		   else a list of neighbours (which can be empty);
-     */
-    private static Collection<Integer> getNeighbours(final String outputFile, final int particleId) {
-        final Path pathToOutputDatFile = Paths.get(outputFile);
-
-        try (final Stream<String> outputDatStream = Files.lines(pathToOutputDatFile)) {
-            final Iterator outputDatIterator = outputDatStream.iterator();
-
-            // skip time of execution
-            if (outputDatIterator.hasNext()) {
-                outputDatIterator.next();
-            }
-
-            final Collection<Integer> neighbours = new LinkedList<>();
-            String potentialNeighbours;
-
-            while (outputDatIterator.hasNext()) {
-                potentialNeighbours = String.valueOf(outputDatIterator.next());
-
-                final Scanner intScanner = new Scanner(potentialNeighbours);
-                if (intScanner.hasNextInt() && intScanner.nextInt() == particleId) {
-                    while (intScanner.hasNextInt()) {
-                        neighbours.add(intScanner.nextInt());
-                    }
-                    return neighbours;
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.warn("Could not get stream from '{}' file. Caused by: ",outputFile, e);
-            System.out.println("An unexpected error was encounter while reading '" + outputFile + "' file.\n" +
-                    "Check the logs for more info.\n" +
-                    "Aborting...");
-            exit(UNEXPECTED_ERROR);
-        }
-        return null;
-    }
-
-    /**
+  /**
      * Try to delete a file, whether it exists or not
      * @param pathToFile the file path that refers to the file that will be deleted
      * @return true if there were not errors when trying to delete the file;
@@ -620,7 +570,7 @@ public class Main {
             // get L
             staticData.L = Double.valueOf(staticFileLines.next());
 
-            // get Velocity
+            // get speed
             staticData.speed = Double.valueOf(staticFileLines.next());
 
             // get radios
