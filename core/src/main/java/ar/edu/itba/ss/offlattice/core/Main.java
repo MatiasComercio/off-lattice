@@ -22,7 +22,7 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static final String DESTINATION_FOLDER = "output";
-  private static final String STATIC_FILE = "static.dat";
+    private static final String STATIC_FILE = "static.dat";
     private static final String DYNAMIC_FILE = "dynamic.dat";
     private static final String OUTPUT_FILE = "output.dat";
     private static final String OVITO_FILE = "graphics.xyz";
@@ -402,11 +402,24 @@ public class Main {
     }
     // Used for building output.dat
     private static String pointsToString(final Set<Point> pointsSet, long iteration) {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         sb.append(iteration).append('\n');
-        pointsSet.forEach(point -> sb.append(point.id()).append('\t').append(point.x()).append('\t').append(point.y()).append('\t')
-                .append(point.speed() * Math.cos(point.orientation())).append('\t')
-                .append(point.speed() * Math.sin(point.orientation())).append('\n'));
+        pointsSet.forEach(point -> {
+            final double vx = point.speed() * Math.cos(point.orientation());
+            final double vy = point.speed() * Math.sin(point.orientation());
+            final double r = Math.cos(point.orientation());
+            final double g = Math.sin(point.orientation());
+            final double b = Math.cos(point.orientation()) * Math.sin(point.orientation());
+            sb.append(point.id()).append('\t')
+                    // position
+                    .append(point.x()).append('\t').append(point.y()).append('\t')
+                    // velocity
+                    .append(vx).append('\t').append(vy).append('\t')
+                    // R G B colors
+                    .append(r).append('\t')
+                    .append(g).append('\t')
+                    .append(b).append('\n');
+        });
         return sb.toString();
     }
 
@@ -417,6 +430,9 @@ public class Main {
      *  - Y Position
      *  - X Speed
      *  - Y Speed
+     *  - R color - vx
+     *  - G color - vy
+     *  - B color - vx + vy
      *  By default, the output file is 'graphics.xyz' which is stored in the 'data' folder.
      * @param staticFile -
      * @param outputFile -
@@ -428,7 +444,7 @@ public class Main {
 
         // save data to a new file
         final File dataFolder = new File(DESTINATION_FOLDER);
-      //noinspection ResultOfMethodCallIgnored
+        //noinspection ResultOfMethodCallIgnored
         dataFolder.mkdirs(); // tries to make directories for the .dat files
 
     /* delete previous dynamic.dat file, if any */
@@ -473,13 +489,25 @@ public class Main {
 
             // Create virtual particles in the borders, in order for Ovito to show the whole board
             sb.append(N+1).append('\t').append(0).append('\t').append(0).append('\t').append(0)
-                    .append('\t').append(0).append('\n');
+                    .append('\t').append(0).append('\t')
+                    // color: black
+                    .append(0).append('\t').append(0).append('\t').append(0)
+                    .append('\n');
             sb.append(N+2).append('\t').append(0).append('\t').append(L).append('\t').append(0)
-                    .append('\t').append(0).append('\n');
+                    .append('\t').append(0).append('\t')
+                    // color: black
+                    .append(0).append('\t').append(0).append('\t').append(0)
+                    .append('\n');
             sb.append(N+3).append('\t').append(L).append('\t').append(0).append('\t').append(0)
-                    .append('\t').append(0).append('\n');
+                    .append('\t').append(0).append('\t')
+                    // color: black
+                    .append(0).append('\t').append(0).append('\t').append(0)
+                    .append('\n');
             sb.append(N+4).append('\t').append(L).append('\t').append(L).append('\t').append(0)
-                    .append('\t').append(0).append('\n');
+                    .append('\t').append(0).append('\t')
+                    // color: black
+                    .append(0).append('\t').append(0).append('\t').append(0)
+                    .append('\n');
 
             stringN = String.valueOf(N+4);
 
@@ -497,7 +525,7 @@ public class Main {
 
                 /*
                   Write particle information in this order
-                  Particle_Id     X_Pos	Y_Pos   X_Vel   Y_Vel
+                  Particle_Id     X_Pos	Y_Pos   X_Vel   Y_Vel R G B
                 */
                 for(int i=0; i<N; i++){
                     writer.write(outputDatIterator.next() + "\n");
@@ -527,7 +555,7 @@ public class Main {
         }
     }
 
-  /**
+    /**
      * Try to delete a file, whether it exists or not
      * @param pathToFile the file path that refers to the file that will be deleted
      * @return true if there were not errors when trying to delete the file;
