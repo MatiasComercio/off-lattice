@@ -25,6 +25,7 @@ public class Main {
     private static final String STATIC_FILE = "static.dat";
     private static final String DYNAMIC_FILE = "dynamic.dat";
     private static final String OUTPUT_FILE = "output.dat";
+    private static final String VA_FILE = "t_va.csv";
     private static final String OVITO_FILE = "graphics.xyz";
     private static final String HELP_TEXT =
             "Off Lattice Automaton Implementation.\n" +
@@ -147,8 +148,12 @@ public class Main {
 
     /* delete previous dynamic.dat file, if any */
         final Path pathToDatFile = Paths.get(DESTINATION_FOLDER, OUTPUT_FILE);
+        final Path pathToVaFile = Paths.get(DESTINATION_FOLDER, VA_FILE);
 
         if(!deleteIfExists(pathToDatFile)) {
+            return;
+        }
+        if(!deleteIfExists(pathToVaFile)) {
             return;
         }
         generateOutputDatFile(points, 0);
@@ -172,20 +177,28 @@ public class Main {
 //
 //		/* delete previous dynamic.dat file, if any */
         final Path pathToDatFile = Paths.get(DESTINATION_FOLDER, OUTPUT_FILE);
+        final Path pathToVaFile = Paths.get(DESTINATION_FOLDER, VA_FILE);
 //
 //        if(!deleteIfExists(pathToDatFile)) {
 //            return;
 //        }
 
     /* write the new output.dat file */
-        final String data = pointsToString(updatedParticles, iteration);
+        final String[] data = pointsToString(updatedParticles, iteration);
 
         BufferedWriter writer = null;
+        BufferedWriter va_writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(pathToDatFile.toFile(), true));
 //            writer.write(String.valueOf(updatedParticles.size()));
 //            writer.write("\n");
-            writer.write(data);
+            writer.write(data[0]);
+
+            va_writer = new BufferedWriter(new FileWriter(pathToVaFile.toFile(), true));
+//            va_writer.write(String.valueOf(iteration));
+//            va_writer.write(",");
+            va_writer.write(data[1]); // write va data
+            va_writer.write("\n");
 
         } catch (IOException e) {
             LOGGER.warn("An unexpected IO Exception occurred while writing the file {}. Caused by: ", pathToDatFile, e);
@@ -198,6 +211,9 @@ public class Main {
                 // close the writer regardless of what happens...
                 if (writer != null) {
                     writer.close();
+                }
+                if (va_writer != null) {
+                    va_writer.close();
                 }
             } catch (Exception ignored) {
 
@@ -401,15 +417,22 @@ public class Main {
         return sb.toString();
     }
     // Used for building output.dat
-    private static String pointsToString(final Set<Point> pointsSet, long iteration) {
+    private static String[] pointsToString(final Set<Point> pointsSet, long iteration) {
         final StringBuilder sb = new StringBuilder();
         sb.append(iteration).append('\n');
-        pointsSet.forEach(point -> {
-            final double vx = point.speed() * Math.cos(point.orientation());
-            final double vy = point.speed() * Math.sin(point.orientation());
-            final double r = Math.cos(point.orientation());
-            final double g = Math.sin(point.orientation());
-            final double b = Math.cos(point.orientation()) * Math.sin(point.orientation());
+        double vx, vy, r, g, b;
+        double vax = 0;
+        double vay = 0;
+        double v = 0;
+        for (Point point : pointsSet) {
+            vx = point.speed() * Math.cos(point.orientation());
+            vy = point.speed() * Math.sin(point.orientation());
+            vax += vx;
+            vay += vy;
+            v += point.speed();
+            r = Math.cos(point.orientation());
+            g = Math.sin(point.orientation());
+            b = Math.cos(point.orientation()) * Math.sin(point.orientation());
             sb.append(point.id()).append('\t')
                     // position
                     .append(point.x()).append('\t').append(point.y()).append('\t')
@@ -419,8 +442,23 @@ public class Main {
                     .append(r).append('\t')
                     .append(g).append('\t')
                     .append(b).append('\n');
-        });
-        return sb.toString();
+        }
+
+        // calculate the current va, assuming the average of all point's speeds (works for the current case)
+        // 1/(N * v/N) = 1/v for this case, assuming the above is valid
+
+        final double va;
+        if (!pointsSet.isEmpty()) {
+            va = (1/v) * (Math.sqrt(Math.pow(vax,2) + Math.pow(vay,2)));
+        } else {
+            va = -1;
+        }
+
+        final String[] answer = new String[2];
+        answer[0] = sb.toString();
+        answer[1] = String.valueOf(va);
+
+        return answer;
     }
 
     /**
