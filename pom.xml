@@ -14,6 +14,7 @@
   </modules>
 
   <properties>
+    <jar.name>off-lattice</jar.name>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
@@ -44,6 +45,10 @@
               <mainClass>ar.edu.itba.ss.offlattice.core.Main</mainClass>
             </manifest>
           </archive>
+          <!-- Rename .jar file and disable the append of 'jar-with-dependencies -->
+          <finalName>${jar.name}</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
+          <!-- / -->
         </configuration>
         <executions>
           <execution>
@@ -92,6 +97,11 @@
         </configuration>
       </plugin>
     </plugins>
+
+    <!-- Name the jar file. -->
+    <!--Default: -->
+    <!-- <finalName>${project.artifactId}-${project.version}</finalName> -->
+    <finalName>${jar.name}-without-dependencies</finalName>
   </build>
 
   <dependencyManagement>

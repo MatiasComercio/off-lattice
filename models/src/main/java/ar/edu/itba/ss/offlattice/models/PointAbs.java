@@ -13,7 +13,7 @@ public abstract class PointAbs {
 	
 	private static long idGen = 1;
 	
-	@Value.Derived
+	@Value.Default
 	public long id() {
 		return idGen ++;
 	}
@@ -32,19 +32,32 @@ public abstract class PointAbs {
 		return 0;
 	}
 
-	@Value.Default
-	public double velocity() {
-		return 0.03;
-	}
-
-	public abstract double orientation();
-	
 	@Value.Check
 	protected void checkRadio() {
 		if (radio() < 0) {
 			throw new IllegalArgumentException("Radio should be >= 0");
 		}
 	}
+
+	@Value.Default
+	@Value.Auxiliary
+	public double speed() {
+		return 0;
+	}
+
+	@Value.Check
+	protected void checkSpeed() {
+		if (speed() < 0) {
+			throw new IllegalArgumentException("Speed (velocity's module) should be >= 0");
+		}
+	}
+
+	@Value.Default
+	@Value.Auxiliary
+	public double orientation(){
+		return 0;
+	}
+
 	
 	/**
 	 * Prints the immutable value {@code Point} with attribute values.
@@ -57,6 +70,8 @@ public abstract class PointAbs {
 						+ ", x=" + x()
 						+ ", y=" + y()
 						+ ", radio=" + radio()
+						+ ", speed=" + speed()
+						+ ", orientation=" + orientation()
 						+ "}";
 	}
 	

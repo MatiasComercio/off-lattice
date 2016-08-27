@@ -9,6 +9,6 @@ Then, run
 ## Execution
 To run the program, from the root folder
 
-    $ java -jar core/target/core-1.0.0-SNAPSHOT-jar-with-dependencies.jar <arguments>
+    $ java -jar core/target/off-lattice.jar <arguments>
 
 
