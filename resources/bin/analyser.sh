@@ -130,14 +130,79 @@ mkdir -p ${RESULTS_FOLDER}
 
 ############################################################
 ############################################################
-N_ARRAY=(40) #100 400 4000 10000)
+N_ARRAY=(40 100 400 4000 10000)
 N_ARRAY_LENGTH=${#N_ARRAY[*]}
 
-L_ARRAY=(3.1 5 10 31.6 50)
+L_ARRAY=(3.1 5 10 31.6 50) # should have the same length as the N array
 
-#NOISE_ARRAY=(0 0.1 0.5 1 2 2.5 4 5)
-NOISE_ARRAY=(1) #2 3 4 5)
+NOISE_ARRAY=(0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5)
 NOISE_ARRAY_LENGTH=${#NOISE_ARRAY[*]}
+
+declare -A MAX_TIME_ARRAY
+# N=40
+MAX_TIME_ARRAY["40","0"]=20;
+MAX_TIME_ARRAY["40","0.5"]=20;
+MAX_TIME_ARRAY["40","1"]=20;
+MAX_TIME_ARRAY["40","1.5"]=70;
+MAX_TIME_ARRAY["40","2"]=70;
+MAX_TIME_ARRAY["40","2.5"]=100;
+MAX_TIME_ARRAY["40","3"]=100;
+MAX_TIME_ARRAY["40","3.5"]=150;
+MAX_TIME_ARRAY["40","4"]=150;
+MAX_TIME_ARRAY["40","4.5"]=600;
+MAX_TIME_ARRAY["40","5"]=600;
+
+# N=100
+MAX_TIME_ARRAY["100","0"]=50;
+MAX_TIME_ARRAY["100","0.5"]=50;
+MAX_TIME_ARRAY["100","1"]=50;
+MAX_TIME_ARRAY["100","1.5"]=100;
+MAX_TIME_ARRAY["100","2"]=100;
+MAX_TIME_ARRAY["100","2.5"]=500;
+MAX_TIME_ARRAY["100","3"]=500;
+MAX_TIME_ARRAY["100","3.5"]=600;
+MAX_TIME_ARRAY["100","4"]=600;
+MAX_TIME_ARRAY["100","4.5"]=500;
+MAX_TIME_ARRAY["100","5"]=500;
+
+# N=400
+MAX_TIME_ARRAY["400","0"]=150;
+MAX_TIME_ARRAY["400","0.5"]=150;
+MAX_TIME_ARRAY["400","1"]=150;
+MAX_TIME_ARRAY["400","1.5"]=1000;
+MAX_TIME_ARRAY["400","2"]=1000;
+MAX_TIME_ARRAY["400","2.5"]=2000;
+MAX_TIME_ARRAY["400","3"]=2000;
+MAX_TIME_ARRAY["400","3.5"]=1000;
+MAX_TIME_ARRAY["400","4"]=1000;
+MAX_TIME_ARRAY["400","4.5"]=400;
+MAX_TIME_ARRAY["400","5"]=400;
+
+# N=4000
+MAX_TIME_ARRAY["4000","0"]=1700;
+MAX_TIME_ARRAY["4000","0.5"]=1700;
+MAX_TIME_ARRAY["4000","1"]=1700;
+MAX_TIME_ARRAY["4000","1.5"]=2000;
+MAX_TIME_ARRAY["4000","2"]=2000;
+MAX_TIME_ARRAY["4000","2.5"]=3000;
+MAX_TIME_ARRAY["4000","3"]=3000;
+MAX_TIME_ARRAY["4000","3.5"]=2000;
+MAX_TIME_ARRAY["4000","4"]=2000;
+MAX_TIME_ARRAY["4000","4.5"]=200;
+MAX_TIME_ARRAY["4000","5"]=200;
+
+# N=10000
+MAX_TIME_ARRAY["10000","0"]=4000;
+MAX_TIME_ARRAY["10000","0.5"]=4000;
+MAX_TIME_ARRAY["10000","1"]=4000;
+MAX_TIME_ARRAY["10000","1.5"]=3500;
+MAX_TIME_ARRAY["10000","2"]=3500;
+MAX_TIME_ARRAY["10000","2.5"]=5000;
+MAX_TIME_ARRAY["10000","3"]=5000;
+MAX_TIME_ARRAY["10000","3.5"]=300;
+MAX_TIME_ARRAY["10000","4"]=300;
+MAX_TIME_ARRAY["10000","4.5"]=300;
+MAX_TIME_ARRAY["10000","5"]=300;
 
 ############################################################
 #############################################################
@@ -179,6 +244,11 @@ for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
 
   for (( j = 0; j < ${NOISE_ARRAY_LENGTH}; j++ )); do
     NOISE=${NOISE_ARRAY[${j}]}
+    MAX_TIME=${MAX_TIME_ARRAY["$N,$NOISE"]}
+    ## +++xdebug
+    echo -e "N: $N ; NOISE: $NOISE ; MAX_TIME: $MAX_TIME"
+    continue
+
     echo -e "  ------------------------------------"
     echo -e "  Running analyser with NOISE = $NOISE..."
 
@@ -202,13 +272,14 @@ for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
       N_VA_ARRAY["$j,$i,$I_VA_MEAN"]=$(bc <<< "scale=6;${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]} + $VA")
       N_VA_ARRAY["$j,$i,$I_VA_SD"]=$(bc <<< "scale=6;${N_VA_ARRAY["$j,$i,$I_VA_SD"]} + $VA * $VA")
 
+      # +++xcomment: DO NOT BACKUP ANYTHING, EXCEPT NEEDED! output.dat is too large
       # Backup current iteration
       BACKUP_DIR="${BACKUP_DIR_NOISE}/I${k}"
       mkdir -p ${BACKUP_DIR}
 
-      cp ${STATIC_PATH} ${BACKUP_DIR}/
-      cp ${DYNAMIC_PATH} ${BACKUP_DIR}/
-      cp ${SIM_OUTPUT_PATH} ${BACKUP_DIR}/
+      # cp ${STATIC_PATH} ${BACKUP_DIR}/
+      # cp ${DYNAMIC_PATH} ${BACKUP_DIR}/
+      # cp ${SIM_OUTPUT_PATH} ${BACKUP_DIR}/
       cp ${SIM_T_VA_PATH} ${BACKUP_DIR}/
 
       PERCENTAGE_COMPLETED=$(bc <<< "scale=6;$k/$C_ITERATIONS * 100")
