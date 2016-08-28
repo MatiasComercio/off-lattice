@@ -245,9 +245,6 @@ for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
   for (( j = 0; j < ${NOISE_ARRAY_LENGTH}; j++ )); do
     NOISE=${NOISE_ARRAY[${j}]}
     MAX_TIME=${MAX_TIME_ARRAY["$N,$NOISE"]}
-    ## +++xdebug
-    echo -e "N: $N ; NOISE: $NOISE ; MAX_TIME: $MAX_TIME"
-    continue
 
     echo -e "  ------------------------------------"
     echo -e "  Running analyser with NOISE = $NOISE..."
