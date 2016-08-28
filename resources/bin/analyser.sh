@@ -58,6 +58,12 @@ function validate_exit_status {
     fi
 }
 
+function write_constants {
+  echo -e "L, $L\r" >> ${OUTPUT_TABLE_PATH}
+  echo -e "V, $V\r" >> ${OUTPUT_TABLE_PATH}
+  echo -e "rc, $RC\r" >> ${OUTPUT_TABLE_PATH}
+}
+
 function gen_va_noise_results {
     local OUTPUT_TABLE_PREFIX
 
@@ -70,6 +76,9 @@ function gen_va_noise_results {
 
     # Add N number to the file
     echo -e "N, $1\r" >> ${OUTPUT_TABLE_PATH}
+
+    # write constants L number to the file
+    write_constants
 
     # Add identifiers of columns to the start of the file
     echo -e "noise, E(Va) = |Va| = mean(Va), SD(Va) = sqrt(|Va^2|-|Va|^2)\r" >> ${OUTPUT_TABLE_PATH}
@@ -87,8 +96,10 @@ function gen_va_n_results {
     rm -f ${OUTPUT_TABLE_PATH}
     touch ${OUTPUT_TABLE_PATH}
 
-    # Add N number to the file
+    # Add NOISE number to the file
     echo -e "NOISE, $1\r" >> ${OUTPUT_TABLE_PATH}
+
+    write_constants
 
     # Add identifiers of columns to the start of the file
     echo -e "N, E(Va) = |Va| = mean(Va), SD(Va) = sqrt(|Va^2|-|Va|^2)\r" >> ${OUTPUT_TABLE_PATH}
@@ -117,13 +128,19 @@ C_ITERATIONS=$6
 # create results folder
 mkdir -p ${RESULTS_FOLDER}
 
-#N_ARRAY=(40 100 400 4000 10000)
-N_ARRAY=(40 100 300 500 ) #700 900 1100 2200 4000) #4000 and 10000 remains
+############################################################
+############################################################
+N_ARRAY=(40) #100 400 4000 10000)
 N_ARRAY_LENGTH=${#N_ARRAY[*]}
 
+L_ARRAY=(3.1 5 10 31.6 50)
+
 #NOISE_ARRAY=(0 0.1 0.5 1 2 2.5 4 5)
-NOISE_ARRAY=(2.5)
+NOISE_ARRAY=(1) #2 3 4 5)
 NOISE_ARRAY_LENGTH=${#NOISE_ARRAY[*]}
+
+############################################################
+#############################################################
 
 I_VA_MEAN=0
 I_VA_SD=1
@@ -146,6 +163,7 @@ done
 echo -e "************************************"
 for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
   N=${N_ARRAY[${i}]}
+  L=${L_ARRAY[${i}]}
 
   echo -e "Running analyser with N = $N..."
   echo -en "  Generating va_noise_results file...  "
@@ -203,6 +221,7 @@ for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
 
 
     N_VA_ARRAY["$j,$i,$I_VA_MEAN"]=$(bc <<< "scale=6;${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]}/$C_ITERATIONS")
+    N_VA_ARRAY["$j,$i,$I_VA_SD"]=$(bc <<< "scale=6;sqrt(${N_VA_ARRAY["$j,$i,$I_VA_SD"]}/$C_ITERATIONS - ${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]} * ${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]})")
 
     ROW="$NOISE, ${NOISE_VA_ARRAY["$i,$j,$I_VA_MEAN"]}, ${NOISE_VA_ARRAY["$i,$j,$I_VA_SD"]}"
     echo -e "${ROW}\r" >> ${OUTPUT_TABLE_PATH}
