@@ -18,6 +18,7 @@ OVITO_OUTPUT_PATH="$OUTPUT_FOLDER/graphics.xyz"
 JAR="java -jar $PROJECT_FOLDER/core/target/off-lattice.jar"
 
 # Start of Script
+START_TIME=$(date +%s)
 
 if [ $# -ne ${PARAMS_REQUIRED} ]; then
 	echo "This script requires $PARAMS_REQUIRED parameters (N, L, v, r, rc, maxTime, noise)"
@@ -49,6 +50,15 @@ ${JAR} lattice ${STATIC_PATH} ${DYNAMIC_PATH} ${RC} ${MAX_TIME} ${NOISE}
 echo -e "Generating graphics.xyz... "
 ${JAR} gen ovito ${STATIC_PATH} ${SIM_OUTPUT_PATH}
 
+END_TIME=$(date +%s)
+
+EXECUTION_TIME=`expr $END_TIME - $START_TIME`
+EXECUTION_TIME_FILE="${OUTPUT_FOLDER}/execution_time.statistics"
+rm -f ${EXECUTION_TIME_FILE}
+touch ${EXECUTION_TIME_FILE}
+echo -e "Execution time: ${EXECUTION_TIME} seconds\r" >> ${EXECUTION_TIME_FILE}
+echo -e "Execution time: ${EXECUTION_TIME} seconds"
+
 # Move output folder to parent project's folder
 mkdir -p ${PROJECT_FOLDER}/output
 mv ${OUTPUT_FOLDER}/* ${PROJECT_FOLDER}/output
@@ -58,4 +68,3 @@ rm -r ${OUTPUT_FOLDER}
 mkdir -p ${PROJECT_FOLDER}/logs
 mv logs/* ${PROJECT_FOLDER}/logs
 rm -r logs
-

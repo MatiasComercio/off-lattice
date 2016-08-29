@@ -58,6 +58,12 @@ function validate_exit_status {
     fi
 }
 
+function write_constants {
+  echo -e "L, $L\r" >> ${OUTPUT_TABLE_PATH}
+  echo -e "V, $V\r" >> ${OUTPUT_TABLE_PATH}
+  echo -e "rc, $RC\r" >> ${OUTPUT_TABLE_PATH}
+}
+
 function gen_va_noise_results {
     local OUTPUT_TABLE_PREFIX
 
@@ -70,6 +76,9 @@ function gen_va_noise_results {
 
     # Add N number to the file
     echo -e "N, $1\r" >> ${OUTPUT_TABLE_PATH}
+
+    # write constants L number to the file
+    write_constants
 
     # Add identifiers of columns to the start of the file
     echo -e "noise, E(Va) = |Va| = mean(Va), SD(Va) = sqrt(|Va^2|-|Va|^2)\r" >> ${OUTPUT_TABLE_PATH}
@@ -87,8 +96,10 @@ function gen_va_n_results {
     rm -f ${OUTPUT_TABLE_PATH}
     touch ${OUTPUT_TABLE_PATH}
 
-    # Add N number to the file
+    # Add NOISE number to the file
     echo -e "NOISE, $1\r" >> ${OUTPUT_TABLE_PATH}
+
+    write_constants
 
     # Add identifiers of columns to the start of the file
     echo -e "N, E(Va) = |Va| = mean(Va), SD(Va) = sqrt(|Va^2|-|Va|^2)\r" >> ${OUTPUT_TABLE_PATH}
@@ -117,14 +128,115 @@ C_ITERATIONS=$6
 # create results folder
 mkdir -p ${RESULTS_FOLDER}
 
+############################################################
+############################################################
+############################################################
+## Parameters for figure a
 #N_ARRAY=(40 100 400 4000 10000)
-N_ARRAY=(40 100 300 500 ) #700 900 1100 2200 4000) #4000 and 10000 remains
+#N_ARRAY_LENGTH=${#N_ARRAY[*]}
+#
+#L_ARRAY=(3.1 5 10 31.6 50) # should have the same length as the N array
+#
+#NOISE_ARRAY=(0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5)
+#NOISE_ARRAY_LENGTH=${#NOISE_ARRAY[*]}
+#
+#declare -A MAX_TIME_ARRAY
+## N=40
+#MAX_TIME_ARRAY["40","0"]=20;
+#MAX_TIME_ARRAY["40","0.5"]=20;
+#MAX_TIME_ARRAY["40","1"]=20;
+#MAX_TIME_ARRAY["40","1.5"]=70;
+#MAX_TIME_ARRAY["40","2"]=70;
+#MAX_TIME_ARRAY["40","2.5"]=100;
+#MAX_TIME_ARRAY["40","3"]=100;
+#MAX_TIME_ARRAY["40","3.5"]=150;
+#MAX_TIME_ARRAY["40","4"]=150;
+#MAX_TIME_ARRAY["40","4.5"]=600;
+#MAX_TIME_ARRAY["40","5"]=600;
+#
+## N=100
+#MAX_TIME_ARRAY["100","0"]=50;
+#MAX_TIME_ARRAY["100","0.5"]=50;
+#MAX_TIME_ARRAY["100","1"]=50;
+#MAX_TIME_ARRAY["100","1.5"]=100;
+#MAX_TIME_ARRAY["100","2"]=100;
+#MAX_TIME_ARRAY["100","2.5"]=500;
+#MAX_TIME_ARRAY["100","3"]=500;
+#MAX_TIME_ARRAY["100","3.5"]=600;
+#MAX_TIME_ARRAY["100","4"]=600;
+#MAX_TIME_ARRAY["100","4.5"]=500;
+#MAX_TIME_ARRAY["100","5"]=500;
+#
+## N=400
+#MAX_TIME_ARRAY["400","0"]=150;
+#MAX_TIME_ARRAY["400","0.5"]=150;
+#MAX_TIME_ARRAY["400","1"]=150;
+#MAX_TIME_ARRAY["400","1.5"]=1000;
+#MAX_TIME_ARRAY["400","2"]=1000;
+#MAX_TIME_ARRAY["400","2.5"]=2000;
+#MAX_TIME_ARRAY["400","3"]=2000;
+#MAX_TIME_ARRAY["400","3.5"]=1000;
+#MAX_TIME_ARRAY["400","4"]=1000;
+#MAX_TIME_ARRAY["400","4.5"]=400;
+#MAX_TIME_ARRAY["400","5"]=400;
+#
+## N=4000
+#MAX_TIME_ARRAY["4000","0"]=1700;
+#MAX_TIME_ARRAY["4000","0.5"]=1700;
+#MAX_TIME_ARRAY["4000","1"]=1700;
+#MAX_TIME_ARRAY["4000","1.5"]=2000;
+#MAX_TIME_ARRAY["4000","2"]=2000;
+#MAX_TIME_ARRAY["4000","2.5"]=3000;
+#MAX_TIME_ARRAY["4000","3"]=3000;
+#MAX_TIME_ARRAY["4000","3.5"]=2000;
+#MAX_TIME_ARRAY["4000","4"]=2000;
+#MAX_TIME_ARRAY["4000","4.5"]=200;
+#MAX_TIME_ARRAY["4000","5"]=200;
+#
+## N=10000
+#MAX_TIME_ARRAY["10000","0"]=4000;
+#MAX_TIME_ARRAY["10000","0.5"]=4000;
+#MAX_TIME_ARRAY["10000","1"]=4000;
+#MAX_TIME_ARRAY["10000","1.5"]=3500;
+#MAX_TIME_ARRAY["10000","2"]=3500;
+#MAX_TIME_ARRAY["10000","2.5"]=5000;
+#MAX_TIME_ARRAY["10000","3"]=5000;
+#MAX_TIME_ARRAY["10000","3.5"]=300;
+#MAX_TIME_ARRAY["10000","4"]=300;
+#MAX_TIME_ARRAY["10000","4.5"]=300;
+#MAX_TIME_ARRAY["10000","5"]=300;
+#
+#############################################################
+
+## Parameters for figure b
+N_ARRAY=(40 100 300 500 700 900 1100 1300 1500 2000 3000 4000)
 N_ARRAY_LENGTH=${#N_ARRAY[*]}
 
-#NOISE_ARRAY=(0 0.1 0.5 1 2 2.5 4 5)
-NOISE_ARRAY=(2.5)
+L=20
+
+NOISE_ARRAY=(2.25)
 NOISE_ARRAY_LENGTH=${#NOISE_ARRAY[*]}
 
+declare -A MAX_TIME_ARRAY
+
+MAX_TIME_ARRAY["40","2.25"]=2000;
+MAX_TIME_ARRAY["100","2.25"]=2000;
+MAX_TIME_ARRAY["300","2.25"]=2000;
+MAX_TIME_ARRAY["500","2.25"]=1300;
+MAX_TIME_ARRAY["700","2.25"]=1600;
+MAX_TIME_ARRAY["900","2.25"]=1700;
+MAX_TIME_ARRAY["1100","2.25"]=1200;
+MAX_TIME_ARRAY["1300","2.25"]=2000;
+MAX_TIME_ARRAY["1500","2.25"]=1000;
+MAX_TIME_ARRAY["2000","2.25"]=1000;
+MAX_TIME_ARRAY["3000","2.25"]=500;
+MAX_TIME_ARRAY["4000","2.25"]=850;
+
+
+
+############################################################
+############################################################
+############################################################
 I_VA_MEAN=0
 I_VA_SD=1
 
@@ -146,6 +258,7 @@ done
 echo -e "************************************"
 for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
   N=${N_ARRAY[${i}]}
+  # L=${L_ARRAY[${i}]} # only for figure a
 
   echo -e "Running analyser with N = $N..."
   echo -en "  Generating va_noise_results file...  "
@@ -161,6 +274,8 @@ for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
 
   for (( j = 0; j < ${NOISE_ARRAY_LENGTH}; j++ )); do
     NOISE=${NOISE_ARRAY[${j}]}
+    MAX_TIME=${MAX_TIME_ARRAY["$N,$NOISE"]}
+
     echo -e "  ------------------------------------"
     echo -e "  Running analyser with NOISE = $NOISE..."
 
@@ -184,13 +299,14 @@ for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
       N_VA_ARRAY["$j,$i,$I_VA_MEAN"]=$(bc <<< "scale=6;${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]} + $VA")
       N_VA_ARRAY["$j,$i,$I_VA_SD"]=$(bc <<< "scale=6;${N_VA_ARRAY["$j,$i,$I_VA_SD"]} + $VA * $VA")
 
+      # +++xcomment: DO NOT BACKUP ANYTHING, EXCEPT NEEDED! output.dat is too large
       # Backup current iteration
       BACKUP_DIR="${BACKUP_DIR_NOISE}/I${k}"
       mkdir -p ${BACKUP_DIR}
 
-      cp ${STATIC_PATH} ${BACKUP_DIR}/
-      cp ${DYNAMIC_PATH} ${BACKUP_DIR}/
-      cp ${SIM_OUTPUT_PATH} ${BACKUP_DIR}/
+      # cp ${STATIC_PATH} ${BACKUP_DIR}/
+      # cp ${DYNAMIC_PATH} ${BACKUP_DIR}/
+      # cp ${SIM_OUTPUT_PATH} ${BACKUP_DIR}/
       cp ${SIM_T_VA_PATH} ${BACKUP_DIR}/
 
       PERCENTAGE_COMPLETED=$(bc <<< "scale=6;$k/$C_ITERATIONS * 100")
@@ -203,6 +319,7 @@ for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
 
 
     N_VA_ARRAY["$j,$i,$I_VA_MEAN"]=$(bc <<< "scale=6;${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]}/$C_ITERATIONS")
+    N_VA_ARRAY["$j,$i,$I_VA_SD"]=$(bc <<< "scale=6;sqrt(${N_VA_ARRAY["$j,$i,$I_VA_SD"]}/$C_ITERATIONS - ${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]} * ${N_VA_ARRAY["$j,$i,$I_VA_MEAN"]})")
 
     ROW="$NOISE, ${NOISE_VA_ARRAY["$i,$j,$I_VA_MEAN"]}, ${NOISE_VA_ARRAY["$i,$j,$I_VA_SD"]}"
     echo -e "${ROW}\r" >> ${OUTPUT_TABLE_PATH}
