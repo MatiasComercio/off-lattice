@@ -130,83 +130,113 @@ mkdir -p ${RESULTS_FOLDER}
 
 ############################################################
 ############################################################
-N_ARRAY=(40 100 400 4000 10000)
+############################################################
+## Parameters for figure a
+#N_ARRAY=(40 100 400 4000 10000)
+#N_ARRAY_LENGTH=${#N_ARRAY[*]}
+#
+#L_ARRAY=(3.1 5 10 31.6 50) # should have the same length as the N array
+#
+#NOISE_ARRAY=(0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5)
+#NOISE_ARRAY_LENGTH=${#NOISE_ARRAY[*]}
+#
+#declare -A MAX_TIME_ARRAY
+## N=40
+#MAX_TIME_ARRAY["40","0"]=20;
+#MAX_TIME_ARRAY["40","0.5"]=20;
+#MAX_TIME_ARRAY["40","1"]=20;
+#MAX_TIME_ARRAY["40","1.5"]=70;
+#MAX_TIME_ARRAY["40","2"]=70;
+#MAX_TIME_ARRAY["40","2.5"]=100;
+#MAX_TIME_ARRAY["40","3"]=100;
+#MAX_TIME_ARRAY["40","3.5"]=150;
+#MAX_TIME_ARRAY["40","4"]=150;
+#MAX_TIME_ARRAY["40","4.5"]=600;
+#MAX_TIME_ARRAY["40","5"]=600;
+#
+## N=100
+#MAX_TIME_ARRAY["100","0"]=50;
+#MAX_TIME_ARRAY["100","0.5"]=50;
+#MAX_TIME_ARRAY["100","1"]=50;
+#MAX_TIME_ARRAY["100","1.5"]=100;
+#MAX_TIME_ARRAY["100","2"]=100;
+#MAX_TIME_ARRAY["100","2.5"]=500;
+#MAX_TIME_ARRAY["100","3"]=500;
+#MAX_TIME_ARRAY["100","3.5"]=600;
+#MAX_TIME_ARRAY["100","4"]=600;
+#MAX_TIME_ARRAY["100","4.5"]=500;
+#MAX_TIME_ARRAY["100","5"]=500;
+#
+## N=400
+#MAX_TIME_ARRAY["400","0"]=150;
+#MAX_TIME_ARRAY["400","0.5"]=150;
+#MAX_TIME_ARRAY["400","1"]=150;
+#MAX_TIME_ARRAY["400","1.5"]=1000;
+#MAX_TIME_ARRAY["400","2"]=1000;
+#MAX_TIME_ARRAY["400","2.5"]=2000;
+#MAX_TIME_ARRAY["400","3"]=2000;
+#MAX_TIME_ARRAY["400","3.5"]=1000;
+#MAX_TIME_ARRAY["400","4"]=1000;
+#MAX_TIME_ARRAY["400","4.5"]=400;
+#MAX_TIME_ARRAY["400","5"]=400;
+#
+## N=4000
+#MAX_TIME_ARRAY["4000","0"]=1700;
+#MAX_TIME_ARRAY["4000","0.5"]=1700;
+#MAX_TIME_ARRAY["4000","1"]=1700;
+#MAX_TIME_ARRAY["4000","1.5"]=2000;
+#MAX_TIME_ARRAY["4000","2"]=2000;
+#MAX_TIME_ARRAY["4000","2.5"]=3000;
+#MAX_TIME_ARRAY["4000","3"]=3000;
+#MAX_TIME_ARRAY["4000","3.5"]=2000;
+#MAX_TIME_ARRAY["4000","4"]=2000;
+#MAX_TIME_ARRAY["4000","4.5"]=200;
+#MAX_TIME_ARRAY["4000","5"]=200;
+#
+## N=10000
+#MAX_TIME_ARRAY["10000","0"]=4000;
+#MAX_TIME_ARRAY["10000","0.5"]=4000;
+#MAX_TIME_ARRAY["10000","1"]=4000;
+#MAX_TIME_ARRAY["10000","1.5"]=3500;
+#MAX_TIME_ARRAY["10000","2"]=3500;
+#MAX_TIME_ARRAY["10000","2.5"]=5000;
+#MAX_TIME_ARRAY["10000","3"]=5000;
+#MAX_TIME_ARRAY["10000","3.5"]=300;
+#MAX_TIME_ARRAY["10000","4"]=300;
+#MAX_TIME_ARRAY["10000","4.5"]=300;
+#MAX_TIME_ARRAY["10000","5"]=300;
+#
+#############################################################
+
+## Parameters for figure b
+N_ARRAY=(40 100 300 500 700 900 1100 1300 1500 2000 3000 4000)
 N_ARRAY_LENGTH=${#N_ARRAY[*]}
 
-L_ARRAY=(3.1 5 10 31.6 50) # should have the same length as the N array
+L=20
 
-NOISE_ARRAY=(0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5)
+NOISE_ARRAY=(2.25)
 NOISE_ARRAY_LENGTH=${#NOISE_ARRAY[*]}
 
 declare -A MAX_TIME_ARRAY
-# N=40
-MAX_TIME_ARRAY["40","0"]=20;
-MAX_TIME_ARRAY["40","0.5"]=20;
-MAX_TIME_ARRAY["40","1"]=20;
-MAX_TIME_ARRAY["40","1.5"]=70;
-MAX_TIME_ARRAY["40","2"]=70;
-MAX_TIME_ARRAY["40","2.5"]=100;
-MAX_TIME_ARRAY["40","3"]=100;
-MAX_TIME_ARRAY["40","3.5"]=150;
-MAX_TIME_ARRAY["40","4"]=150;
-MAX_TIME_ARRAY["40","4.5"]=600;
-MAX_TIME_ARRAY["40","5"]=600;
 
-# N=100
-MAX_TIME_ARRAY["100","0"]=50;
-MAX_TIME_ARRAY["100","0.5"]=50;
-MAX_TIME_ARRAY["100","1"]=50;
-MAX_TIME_ARRAY["100","1.5"]=100;
-MAX_TIME_ARRAY["100","2"]=100;
-MAX_TIME_ARRAY["100","2.5"]=500;
-MAX_TIME_ARRAY["100","3"]=500;
-MAX_TIME_ARRAY["100","3.5"]=600;
-MAX_TIME_ARRAY["100","4"]=600;
-MAX_TIME_ARRAY["100","4.5"]=500;
-MAX_TIME_ARRAY["100","5"]=500;
+MAX_TIME_ARRAY["40","2.25"]=2000;
+MAX_TIME_ARRAY["100","2.25"]=2000;
+MAX_TIME_ARRAY["300","2.25"]=2000;
+MAX_TIME_ARRAY["500","2.25"]=1300;
+MAX_TIME_ARRAY["700","2.25"]=1600;
+MAX_TIME_ARRAY["900","2.25"]=1700;
+MAX_TIME_ARRAY["1100","2.25"]=1200;
+MAX_TIME_ARRAY["1300","2.25"]=2000;
+MAX_TIME_ARRAY["1500","2.25"]=1000;
+MAX_TIME_ARRAY["2000","2.25"]=1000;
+MAX_TIME_ARRAY["3000","2.25"]=500;
+MAX_TIME_ARRAY["4000","2.25"]=850;
 
-# N=400
-MAX_TIME_ARRAY["400","0"]=150;
-MAX_TIME_ARRAY["400","0.5"]=150;
-MAX_TIME_ARRAY["400","1"]=150;
-MAX_TIME_ARRAY["400","1.5"]=1000;
-MAX_TIME_ARRAY["400","2"]=1000;
-MAX_TIME_ARRAY["400","2.5"]=2000;
-MAX_TIME_ARRAY["400","3"]=2000;
-MAX_TIME_ARRAY["400","3.5"]=1000;
-MAX_TIME_ARRAY["400","4"]=1000;
-MAX_TIME_ARRAY["400","4.5"]=400;
-MAX_TIME_ARRAY["400","5"]=400;
 
-# N=4000
-MAX_TIME_ARRAY["4000","0"]=1700;
-MAX_TIME_ARRAY["4000","0.5"]=1700;
-MAX_TIME_ARRAY["4000","1"]=1700;
-MAX_TIME_ARRAY["4000","1.5"]=2000;
-MAX_TIME_ARRAY["4000","2"]=2000;
-MAX_TIME_ARRAY["4000","2.5"]=3000;
-MAX_TIME_ARRAY["4000","3"]=3000;
-MAX_TIME_ARRAY["4000","3.5"]=2000;
-MAX_TIME_ARRAY["4000","4"]=2000;
-MAX_TIME_ARRAY["4000","4.5"]=200;
-MAX_TIME_ARRAY["4000","5"]=200;
-
-# N=10000
-MAX_TIME_ARRAY["10000","0"]=4000;
-MAX_TIME_ARRAY["10000","0.5"]=4000;
-MAX_TIME_ARRAY["10000","1"]=4000;
-MAX_TIME_ARRAY["10000","1.5"]=3500;
-MAX_TIME_ARRAY["10000","2"]=3500;
-MAX_TIME_ARRAY["10000","2.5"]=5000;
-MAX_TIME_ARRAY["10000","3"]=5000;
-MAX_TIME_ARRAY["10000","3.5"]=300;
-MAX_TIME_ARRAY["10000","4"]=300;
-MAX_TIME_ARRAY["10000","4.5"]=300;
-MAX_TIME_ARRAY["10000","5"]=300;
 
 ############################################################
-#############################################################
-
+############################################################
+############################################################
 I_VA_MEAN=0
 I_VA_SD=1
 
@@ -228,7 +258,7 @@ done
 echo -e "************************************"
 for (( i = 0; i < ${N_ARRAY_LENGTH}; i++ )); do
   N=${N_ARRAY[${i}]}
-  L=${L_ARRAY[${i}]}
+  # L=${L_ARRAY[${i}]} # only for figure a
 
   echo -e "Running analyser with N = $N..."
   echo -en "  Generating va_noise_results file...  "
